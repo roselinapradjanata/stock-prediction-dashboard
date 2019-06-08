@@ -1,6 +1,6 @@
 import React from 'react';
 import clsx from 'clsx';
-import { makeStyles } from '@material-ui/core/styles';
+import { withStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -9,10 +9,10 @@ import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Chart from '../components/Chart';
-import Deposits from '../components/Deposits';
-import Orders from '../components/Orders';
+import Menu from '../components/Menu';
+import Prices from '../components/Prices';
 
-const useStyles = makeStyles(theme => ({
+const styles = theme => ({
   root: {
     display: 'flex',
   },
@@ -48,44 +48,65 @@ const useStyles = makeStyles(theme => ({
   fixedHeight: {
     height: 240,
   },
-}));
+});
 
-export default function Dashboard() {
-  const classes = useStyles();
-  const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
+class Dashboard extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      stock: {},
+      prediction: {},
+    };
+  }
 
-  return (
-    <div className={classes.root}>
-      <CssBaseline />
-      <AppBar position="absolute" className={classes.appBar}>
-        <Toolbar className={classes.toolbar}>
-          <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
-            Dashboard
-          </Typography>
-        </Toolbar>
-      </AppBar>
-      <main className={classes.content}>
-        <div className={classes.appBarSpacer} />
-        <Container maxWidth="lg" className={classes.container}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={8} lg={9}>
-              <Paper className={fixedHeightPaper}>
-                <Chart />
-              </Paper>
+  stockChangeCallback = (stock, prediction) => {
+    this.setState({ stock: stock, prediction: prediction }, () => console.log(this.state));
+  };
+
+  render() {
+    const { classes } = this.props;
+    const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
+
+    return (
+      <div className={classes.root}>
+        <CssBaseline />
+        <AppBar position="absolute" className={classes.appBar}>
+          <Toolbar className={classes.toolbar}>
+            <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
+              Dashboard
+            </Typography>
+          </Toolbar>
+        </AppBar>
+        <main className={classes.content}>
+          <div className={classes.appBarSpacer} />
+          <Container maxWidth="lg" className={classes.container}>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={8} lg={9}>
+                <Paper className={fixedHeightPaper}>
+                  <Chart />
+                </Paper>
+              </Grid>
+              <Grid item xs={12} md={4} lg={3}>
+                <Paper className={fixedHeightPaper}>
+                  <Menu callbackFromParent={this.stockChangeCallback} />
+                </Paper>
+              </Grid>
+              <Grid item xs={6}>
+                <Paper className={classes.paper}>
+                  <Prices type="Actual"/>
+                </Paper>
+              </Grid>
+              <Grid item xs={6}>
+                <Paper className={classes.paper}>
+                  <Prices type="Predicted"/>
+                </Paper>
+              </Grid>
             </Grid>
-            <Grid item xs={12} md={4} lg={3}>
-              <Paper className={fixedHeightPaper}>
-                <Deposits />
-              </Paper>
-            </Grid>
-            <Grid item xs={12}>
-              <Paper className={classes.paper}>
-                <Orders />
-              </Paper>
-            </Grid>
-          </Grid>
-        </Container>
-      </main>
-    </div>
-  );
+          </Container>
+        </main>
+      </div>
+    );
+  }
 }
+
+export default withStyles(styles)(Dashboard);
