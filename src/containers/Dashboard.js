@@ -8,9 +8,12 @@ import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
+import { Spin } from 'antd';
 import Chart from '../components/Chart';
 import Menu from '../components/Menu';
 import Prices from '../components/Prices';
+import { getPrediction } from "../services/api";
+import 'antd/dist/antd.css';
 
 const styles = theme => ({
   root: {
@@ -44,9 +47,10 @@ const styles = theme => ({
     display: 'flex',
     overflow: 'auto',
     flexDirection: 'column',
+    minHeight: 200,
   },
   fixedHeight: {
-    height: 240,
+    height: 300,
   },
 });
 
@@ -55,16 +59,22 @@ class Dashboard extends React.Component {
     super(props);
     this.state = {
       stock: {},
-      prediction: {},
+      result: {},
+      loading: false
     };
   }
 
-  stockChangeCallback = (stock, prediction) => {
-    this.setState({ stock: stock, prediction: prediction }, () => console.log(this.state));
+  stockChangeCallback = (stock) => {
+    this.setState({ loading: true });
+    getPrediction(stock.code, 1)
+      .then(({ data }) => {
+        this.setState({ stock: stock, result: data, loading: false });
+      });
   };
 
   render() {
     const { classes } = this.props;
+    const { stock, result, loading } = this.state;
     const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
 
     return (
@@ -82,9 +92,11 @@ class Dashboard extends React.Component {
           <Container maxWidth="lg" className={classes.container}>
             <Grid container spacing={3}>
               <Grid item xs={12} md={8} lg={9}>
-                <Paper className={fixedHeightPaper}>
-                  <Chart />
-                </Paper>
+                <Spin spinning={loading}>
+                  <Paper className={fixedHeightPaper}>
+                    <Chart title={stock.name}/>
+                  </Paper>
+                </Spin>
               </Grid>
               <Grid item xs={12} md={4} lg={3}>
                 <Paper className={fixedHeightPaper}>
@@ -92,14 +104,18 @@ class Dashboard extends React.Component {
                 </Paper>
               </Grid>
               <Grid item xs={6}>
-                <Paper className={classes.paper}>
-                  <Prices type="Actual"/>
-                </Paper>
+                <Spin spinning={loading}>
+                  <Paper className={classes.paper}>
+                    <Prices type="Actual" data={result.actual}/>
+                  </Paper>
+                </Spin>
               </Grid>
               <Grid item xs={6}>
-                <Paper className={classes.paper}>
-                  <Prices type="Predicted"/>
-                </Paper>
+                <Spin spinning={loading}>
+                  <Paper className={classes.paper}>
+                    <Prices type="Predicted" data={result.predicted}/>
+                  </Paper>
+                </Spin>
               </Grid>
             </Grid>
           </Container>
