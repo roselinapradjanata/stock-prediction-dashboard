@@ -5,6 +5,6 @@ export function getAllStocks() {
   return axios.get(url.GET_ALL_STOCKS);
 }
 
-export function getPrediction(code) {
-  return axios.get(url.GET_STOCK_PREDICTION(code));
+export function getPrediction(code, days) {
+  return axios.get(url.GET_STOCK_PREDICTION(code, days));
 }
