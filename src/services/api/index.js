@@ -1,5 +1,5 @@
 import axios from 'axios';
-import * as url from './constant';
+import * as url from './constants';
 
 export function getAllStocks() {
   return axios.get(url.GET_ALL_STOCKS);

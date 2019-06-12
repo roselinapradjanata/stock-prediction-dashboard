@@ -1,5 +1,5 @@
-const SERVICE_HOST = 'http://localhost';
-const SERVICE_PORT = '5000';
+const SERVICE_HOST = process.env.REACT_APP_SERVICE_HOST;
+const SERVICE_PORT = process.env.REACT_APP_SERVICE_PORT;
 const HOST = `${SERVICE_HOST}:${SERVICE_PORT}`;
 
 export const GET_ALL_STOCKS = `${HOST}/api/v1/stocks`;
