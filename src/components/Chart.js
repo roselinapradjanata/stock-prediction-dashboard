@@ -1,46 +1,48 @@
 import React from 'react';
-import { LineChart, Line, XAxis, YAxis, Label, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Label, ResponsiveContainer } from 'recharts';
+import { Empty } from 'antd';
 import Title from './Title';
 
-function createData(time, amount) {
-  return { time, amount };
-}
+class Chart extends React.Component {
+  render() {
+    const { title, actual, predicted } = this.props;
+    const data = actual && predicted && this.combineData(actual, predicted);
+    return (
+      <React.Fragment>
+        <Title>{title || 'Price Chart'}</Title>
+        {data ? this.renderChart(data) : <Empty style={{ verticalAlign: "middle" }}/>}
+      </React.Fragment>
+    );
+  }
 
-const data = [
-  createData('00:00', 0),
-  createData('03:00', 300),
-  createData('06:00', 600),
-  createData('09:00', 800),
-  createData('12:00', 1500),
-  createData('15:00', 2000),
-  createData('18:00', 2400),
-  createData('21:00', 2400),
-  createData('24:00', undefined),
-];
-
-export default function Chart() {
-  return (
-    <React.Fragment>
-      <Title>Today</Title>
-      <ResponsiveContainer>
-        <LineChart
-          data={data}
-          margin={{
-            top: 16,
-            right: 16,
-            bottom: 0,
-            left: 24,
-          }}
-        >
-          <XAxis dataKey="time" />
-          <YAxis>
-            <Label angle={270} position="left" style={{ textAnchor: 'middle' }}>
-              Sales ($)
-            </Label>
-          </YAxis>
-          <Line type="monotone" dataKey="amount" stroke="#556CD6" dot={false} />
-        </LineChart>
-      </ResponsiveContainer>
-    </React.Fragment>
+  renderChart = (data) => (
+    <ResponsiveContainer>
+      <LineChart
+        data={data}
+        margin={{
+          top: 10, right: 30, left: 20, bottom: 5,
+        }}
+      >
+        <CartesianGrid strokeDasharray="3 3"/>
+        <XAxis dataKey="date"/>
+        <YAxis type="number" domain={['dataMin', 'dataMax']}>
+          <Label angle={270} position="left" style={{ textAnchor: 'middle' }}>
+            Price (Rp)
+          </Label>
+        </YAxis>
+        <Tooltip/>
+        <Legend/>
+        <Line type="monotone" dataKey="predicted" stroke="#8884d8"/>
+        <Line type="monotone" dataKey="actual" stroke="#82ca9d"/>
+      </LineChart>
+    </ResponsiveContainer>
   );
+
+  combineData = (actual, predicted) => {
+    let data = predicted.map(row => ({ 'date': row.date, 'predicted': row.price }));
+    actual.forEach((row, i) => data[i].actual = row.price);
+    return data;
+  };
 }
+
+export default Chart;

@@ -12,8 +12,9 @@ import { Spin } from 'antd';
 import Chart from '../components/Chart';
 import Menu from '../components/Menu';
 import Prices from '../components/Prices';
-import { getPrediction } from "../services/api";
+import { getPrediction, getPredictionTransferLearning } from "../services/api";
 import 'antd/dist/antd.css';
+import Scores from "../components/Scores";
 
 const styles = theme => ({
   root: {
@@ -47,11 +48,14 @@ const styles = theme => ({
     display: 'flex',
     overflow: 'auto',
     flexDirection: 'column',
-    minHeight: 200,
+    minHeight: "100%",
   },
   fixedHeight: {
-    height: 300,
+    height: 450,
   },
+  fixedHeightContainer: {
+    height: 474
+  }
 });
 
 class Dashboard extends React.Component {
@@ -64,11 +68,15 @@ class Dashboard extends React.Component {
     };
   }
 
-  stockChangeCallback = (stock) => {
+  stockChangeCallback = (stock, days, transferLearning = false) => {
     this.setState({ loading: true });
-    getPrediction(stock.code, 1)
+    let func = transferLearning ? getPredictionTransferLearning : getPrediction;
+    func(stock.code, days)
       .then(({ data }) => {
         this.setState({ stock: stock, result: data, loading: false });
+      })
+      .catch(error => {
+        this.setState({ stock: {}, result: {}, loading: false });
       });
   };
 
@@ -79,7 +87,7 @@ class Dashboard extends React.Component {
 
     return (
       <div className={classes.root}>
-        <CssBaseline />
+        <CssBaseline/>
         <AppBar position="absolute" className={classes.appBar}>
           <Toolbar className={classes.toolbar}>
             <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
@@ -88,20 +96,31 @@ class Dashboard extends React.Component {
           </Toolbar>
         </AppBar>
         <main className={classes.content}>
-          <div className={classes.appBarSpacer} />
+          <div className={classes.appBarSpacer}/>
           <Container maxWidth="lg" className={classes.container}>
             <Grid container spacing={3}>
               <Grid item xs={12} md={8} lg={9}>
                 <Spin spinning={loading}>
                   <Paper className={fixedHeightPaper}>
-                    <Chart title={stock.name}/>
+                    <Chart title={stock.name} actual={result.actual} predicted={result.predicted}/>
                   </Paper>
                 </Spin>
               </Grid>
-              <Grid item xs={12} md={4} lg={3}>
-                <Paper className={fixedHeightPaper}>
-                  <Menu callbackFromParent={this.stockChangeCallback} />
-                </Paper>
+              <Grid container item xs={12} md={4} lg={3} direction="column">
+                <Grid className={classes.fixedHeightContainer} container item spacing={3} direction="column">
+                  <Grid item lg>
+                    <Paper className={classes.paper}>
+                      <Menu callbackFromParent={this.stockChangeCallback}/>
+                    </Paper>
+                  </Grid>
+                  <Grid item lg>
+                    <Paper className={classes.paper}>
+                      <Spin spinning={loading}>
+                        <Scores data={result.scores}/>
+                      </Spin>
+                    </Paper>
+                  </Grid>
+                </Grid>
               </Grid>
               <Grid item xs={6}>
                 <Spin spinning={loading}>
