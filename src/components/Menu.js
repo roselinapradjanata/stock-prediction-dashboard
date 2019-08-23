@@ -91,7 +91,7 @@ class Menu extends React.Component {
               disabled={!stock.code}
               onClick={this.handleSearchClick}
             >
-              Search
+              Predict
             </Button>
           </Grid>
         </Grid>
